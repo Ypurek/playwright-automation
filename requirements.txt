@@ -1,0 +1,2 @@
+playwright==1.8.0a1
+pytest==6.2.1
