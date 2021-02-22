@@ -3,7 +3,9 @@
 Test project to show
 
 - features of MS Playwright on Python
-- automation project structure using pytest
+- automation project structure using pytest  
+
+All tests designed to cover application [Test-Me](https://github.com/Ypurek/TestMe-TCM)
 
 Tools:
 
