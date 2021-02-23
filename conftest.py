@@ -7,6 +7,7 @@ from pytest import fixture
 from playwright.sync_api import sync_playwright
 from page_objects.application import App
 from helpers.web_service import WebService
+from helpers.db import DataBase
 
 
 @fixture(autouse=True, scope='session')
@@ -25,6 +26,14 @@ def get_web_service(request):
     web.login(**config)
     yield web
     web.close()
+
+
+@fixture(scope='session')
+def get_db(request):
+    path = request.config.getini('db_path')
+    db = DataBase(path)
+    yield db
+    db.close()
 
 
 @fixture(scope='session')
@@ -108,6 +117,7 @@ def pytest_addoption(parser):
     parser.addoption('--device', action='store', default='')
     parser.addoption('--browser', action='store', default='chromium')
     parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
+    parser.addini('db_path', help='path to sqlite db file', default='C:\\DEV\\demo\\TestMe-TCM\\db.sqlite3')
     parser.addini('headless', help='run browser in headless mode', default='True')
 
 
