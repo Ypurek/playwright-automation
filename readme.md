@@ -3,7 +3,7 @@
 Test project to show
 
 - features of MS Playwright on Python
-- automation project structure using pytest  
+- automation project structure using pytest
 
 All tests designed to cover application [Test-Me](https://github.com/Ypurek/TestMe-TCM)
 
@@ -33,12 +33,22 @@ Tools:
 ## Run guide
 
 1. Create file `secure.json` for logins and passwords. Structure:
-   ```json
-   {
-    "login": "login",
-    "password": "password"
-   }
-   ```
+
+```json
+{
+  "users": {
+    "userRole1": {
+      "login": "login",
+      "password": "password"
+    },
+    "userRole2": {
+      "login": "login",
+      "password": "password"
+    }
+  }
+}
+```
+
 2. Install software to test [Test-Me](https://github.com/Ypurek/TestMe-TCM)
 3. Run Test-Me (check guide in it's repo)
 4. Run tests using command `pytest`

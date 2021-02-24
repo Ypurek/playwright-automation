@@ -66,6 +66,9 @@ class App:
     def refresh_dashboard(self):
         self.page.click('input')
 
+    def get_total_tests_stats(self):
+        return self.page.text_content('.total >> span')
+
     def close(self):
         self.page.close()
         self.context.close()
