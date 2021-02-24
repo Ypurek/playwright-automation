@@ -65,6 +65,7 @@ class App:
 
     def refresh_dashboard(self):
         self.page.click('input')
+        self.page.wait_for_event('response')
 
     def get_total_tests_stats(self):
         return self.page.text_content('.total >> span')
