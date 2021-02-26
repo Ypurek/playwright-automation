@@ -2,8 +2,9 @@ import os
 import json
 import pytest
 import logging
+import allure
 from settings import *
-from pytest import fixture
+from pytest import fixture, hookimpl
 from playwright.sync_api import sync_playwright
 from page_objects.application import App
 from helpers.web_service import WebService
@@ -124,10 +125,27 @@ def mobile_app_auth(mobile_app, request):
     yield app
 
 
+@hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    result = outcome.get_result()
+    # result.when == "setup" >> "call" >> "teardown"
+    setattr(item, f'result_{result.when}', result)
+
+
+@fixture(scope='function', autouse=True)
+def make_screenshots(request):
+    yield
+    if request.node.result_call.failed:
+        for arg in request.node.funcargs.values():
+            if isinstance(arg, App):
+                allure.attach(body=arg.page.screenshot(),
+                              name='screenshot.png',
+                              attachment_type=allure.attachment_type.PNG)
+
+
 def pytest_addoption(parser):
     parser.addoption('--secure', action='store', default='secure.json')
-    parser.addoption('--device', action='store', default='')
-    parser.addoption('--browser', action='store', default='chromium')
     parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
     parser.addini('db_path', help='path to sqlite db file', default='C:\\DEV\\demo\\TestMe-TCM\\db.sqlite3')
     parser.addini('headless', help='run browser in headless mode', default='True')
