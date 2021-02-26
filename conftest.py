@@ -12,10 +12,25 @@ from helpers.db import DataBase
 
 
 @fixture(autouse=True, scope='session')
-def preconditions():
+def preconditions(request):
     logging.info('preconditions started')
+    base_url = request.config.getini('base_url')
+    tcm = request.config.getini('tcm_report')
+    secure = request.config.getoption('--secure')
+    config = load_config(secure)
     yield
     logging.info('postconditions started')
+
+    if tcm == 'True':
+        web = WebService(base_url)
+        web.login(**config['users']['userRole3'])
+        for test in request.node.items:
+            if len(test.own_markers) > 0:
+                if test.own_markers[0].name == 'test_id':
+                    if test.result_call.passed:
+                        web.report_test(test.own_markers[0].args[0], 'PASS')
+                    if test.result_call.failed:
+                        web.report_test(test.own_markers[0].args[0], 'FAIL')
 
 
 @fixture(scope='session')
@@ -149,6 +164,7 @@ def pytest_addoption(parser):
     parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
     parser.addini('db_path', help='path to sqlite db file', default='C:\\DEV\\demo\\TestMe-TCM\\db.sqlite3')
     parser.addini('headless', help='run browser in headless mode', default='True')
+    parser.addini('tcm_report', help='report test results to tcm', default='False')
 
 
 def load_config(file):
