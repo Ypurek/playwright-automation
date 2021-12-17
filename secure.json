@@ -1,0 +1,12 @@
+{
+  "users": {
+    "userRole1": {
+      "login": "alice",
+      "password": "Qamania123"
+    },
+    "userRole2": {
+      "login": "bob ",
+      "password": "Qamania123"
+    }
+  }
+}

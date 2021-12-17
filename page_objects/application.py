@@ -2,14 +2,17 @@ import logging
 import allure
 from playwright.sync_api import Browser
 from playwright.sync_api import Request, Route, ConsoleMessage, Dialog
-from .test_cases import TestCases
-from .demo_pages import DemoPages
+from page_objects.test_cases import TestCases
+from page_objects.demo_pages import DemoPages
+from settings import DEFAULT_TIMEOUT
+from contextlib import contextmanager
 
 
 class App:
     def __init__(self, browser: Browser, base_url: str, **kwargs):
         self.browser = browser
         self.context = self.browser.new_context(**kwargs)
+        self.context.set_default_timeout(DEFAULT_TIMEOUT)
         self.page = self.context.new_page()
         self.base_url = base_url
         self.test_cases = TestCases(self.page)
@@ -63,18 +66,18 @@ class App:
         return self.page.text_content('.position')
 
     @allure.step
+    @contextmanager
     def intercept_requests(self, url: str, payload: str):
         def handler(route: Route, request: Request):
             route.fulfill(status=200, body=payload)
 
         self.page.route(url, handler)
-
-    @allure.step
-    def stop_intercept(self, url: str):
+        yield
         self.page.unroute(url)
 
     @allure.step
     def refresh_dashboard(self):
+        # with self.page.expect_response(lambda response: response.status_code == 200):
         self.page.click('input')
         self.page.wait_for_event('response')
 

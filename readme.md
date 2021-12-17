@@ -32,7 +32,7 @@ Tools:
 
 ## Run guide
 
-1. Create file `secure.json` for logins and passwords. Structure:
+1. Create file `secure.json` for logins and passwords. Structure below. For demo purpose my file included to project as credentials already exposed in Test-Me documentaion
 
 ```json
 {
@@ -48,9 +48,9 @@ Tools:
   }
 }
 ```
-
 2. Install software to test [Test-Me](https://github.com/Ypurek/TestMe-TCM)
-3. Run Test-Me (check guide in it's repo)
-4. Run tests using command `pytest`
+3. Set correct path to DB in `pytest.ini` file
+4. Run Test-Me (check guide in it's repo)
+5. Run tests using command `pytest`
 
 

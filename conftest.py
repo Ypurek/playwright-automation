@@ -13,11 +13,20 @@ from helpers.db import DataBase
 
 @fixture(autouse=True, scope='session')
 def preconditions(request):
+    """
+    Global fixtures. Run automatically before all tests and executes part before yield statement as test precondition.
+    Executes code after yield statement after last test executed as test post conditions
+
+    Reports test results to TCP via API helper in post conditions
+
+    :param request: pytest fixture
+    https://docs.pytest.org/en/6.2.x/reference.html#std-fixture-request
+    """
     logging.info('preconditions started')
     base_url = request.config.getini('base_url')
     tcm = request.config.getini('tcm_report')
     secure = request.config.getoption('--secure')
-    config = load_config(secure)
+    config = load_config(request.session.fspath.strpath, secure)
     yield
     logging.info('postconditions started')
 
@@ -35,9 +44,17 @@ def preconditions(request):
 
 @fixture(scope='session')
 def get_web_service(request):
+    """
+    Fixture returns authenticated WebService object to work with tested app directly via web services
+
+    :param request: pytest fixture
+    https://docs.pytest.org/en/6.2.x/reference.html#std-fixture-request
+
+    :return: WebService object
+    """
     base_url = request.config.getini('base_url')
     secure = request.config.getoption('--secure')
-    config = load_config(secure)
+    config = load_config(request.session.fspath.strpath, secure)
     web = WebService(base_url)
     web.login(**config['users']['userRole1'])
     yield web
@@ -46,6 +63,14 @@ def get_web_service(request):
 
 @fixture(scope='session')
 def get_db(request):
+    """
+    Fixture returns DataBase object to work with tested app directly via db
+
+    :param request: pytest fixture
+    https://docs.pytest.org/en/6.2.x/reference.html#std-fixture-request
+
+    :return: WebService object
+    """
     path = request.config.getini('db_path')
     db = DataBase(path)
     yield db
@@ -54,6 +79,10 @@ def get_db(request):
 
 @fixture(scope='session')
 def get_playwright():
+    """
+    returns single instance of playwright itself
+    :return:
+    """
     with sync_playwright() as playwright:
         yield playwright
 
@@ -61,6 +90,8 @@ def get_playwright():
 @fixture(scope='session', params=['chromium'])
 def get_browser(get_playwright, request):
     browser = request.param
+    # save browser type to env variable so fixtures and tests can get current browser
+    # Needed to skip unused browser-test combinations
     os.environ['PWBROWSER'] = browser
     headless = request.config.getini('headless')
     if headless == 'True':
@@ -84,6 +115,9 @@ def get_browser(get_playwright, request):
 
 @fixture(scope='session')
 def desktop_app(get_browser, request):
+    """
+    Fixture of playwright for non autorised tests
+    """
     base_url = request.config.getini('base_url')
     app = App(get_browser, base_url=base_url, **BROWSER_OPTIONS)
     app.goto('/')
@@ -94,7 +128,7 @@ def desktop_app(get_browser, request):
 @fixture(scope='session')
 def desktop_app_auth(desktop_app, request):
     secure = request.config.getoption('--secure')
-    config = load_config(secure)
+    config = load_config(request.session.fspath.strpath, secure)
     app = desktop_app
     app.goto('/login')
     app.login(**config['users']['userRole1'])
@@ -162,12 +196,13 @@ def make_screenshots(request):
 def pytest_addoption(parser):
     parser.addoption('--secure', action='store', default='secure.json')
     parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
-    parser.addini('db_path', help='path to sqlite db file', default='C:\\DEV\\demo\\TestMe-TCM\\db.sqlite3')
+    parser.addini('db_path', help='path to sqlite db file', default='C:\\DEV\\TestMe-TCM\\db.sqlite3')
     parser.addini('headless', help='run browser in headless mode', default='True')
     parser.addini('tcm_report', help='report test results to tcm', default='False')
 
 
-def load_config(file):
-    config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), file)
+# request.session.fspath.strpath - path to project root
+def load_config(project_path: str, file: str) -> dict:
+    config_file = os.path.join(project_path, file)
     with open(config_file) as cfg:
         return json.loads(cfg.read())

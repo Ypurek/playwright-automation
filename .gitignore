@@ -9,9 +9,10 @@ __pycache__/
 
 # reporting
 report/
+report.xml
 
 # logs
 *.log
 
 # secure info
-secure.json
+#secure.json

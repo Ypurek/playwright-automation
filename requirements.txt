@@ -1,4 +1,5 @@
-playwright==1.8.0a1
-pytest==6.2.1
-allure-pytest==2.8.34
+playwright
+pytest
+allure-pytest
+requests
 
