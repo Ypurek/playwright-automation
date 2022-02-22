@@ -139,7 +139,7 @@ def desktop_app_auth(desktop_app, request):
 def desktop_app_bob(get_browser, request):
     base_url = request.config.getini('base_url')
     secure = request.config.getoption('--secure')
-    config = load_config(secure)
+    config = load_config(request.session.fspath.strpath, secure)
     app = App(get_browser, base_url=base_url, **BROWSER_OPTIONS)
     app.goto('/login')
     app.login(**config['users']['userRole2'])
@@ -167,7 +167,7 @@ def mobile_app(get_playwright, get_browser, request):
 @fixture(scope='session')
 def mobile_app_auth(mobile_app, request):
     secure = request.config.getoption('--secure')
-    config = load_config(secure)
+    config = load_config(request.session.fspath.strpath, secure)
     app = mobile_app
     app.goto('/login')
     app.login(**config['users']['userRole1'])
